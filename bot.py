@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
+
 import discord
 import random
+import configargparse
+
+client = discord.Client()
 
 @client.event
 async def on_ready():
@@ -18,8 +23,16 @@ async def on_message(message):
         await message.channel.send(theme)
 
 if __name__ == "__main__":
-
-    list_of_themes = ["country adjacent","hand claps","Doyle's imaginary jukebox","Brunch","Hype trax","Sad highschool","Jersey turnpike","Mass turnpike","vanlife","Pacific coast highway","whaling shanties","whaling protest songs","sleigh bells","ass claps","vocalists most would agree do not have a traditionally good singing voice","better the second time","brain fuzz","Warm up music for the NBA all star game ","Theme songs ","Poop","Fishing songs ","Songs where more than one person sings a verse (or part of a verse). ","Sounds like the future ","The kids are alright","Songs with whistling","Animal songs ","Songs my mom would like","Weed Gummy","Monster songs","fever and chills","Connecticut Pizza","Harsh Limits","plumbing","interstate 10","my favorite country songs","my jam in high school","Should have been added to the THPS remake ","b side","dancing the night away","Drunkest I've ever been","straight edge","horn-y","under the covers","I'm freaking out, maaaan","courting mode","shower sex","Side Saddle","Songs with talking"]
-
-    client = discord.Client()
-    client.run('token')
+    # setup/process args
+    parser = configargparse.ArgParser()
+    parser.add("-t", "--bot-token", env_var="BOT_TOKEN", required=True, help="Discord bot API token")
+    parser.add("-f", "--theme-file", env_var="THEME_FILE", default="themes.txt", help="File comtaining themes one per line")
+    opts = parser.parse_args()
+    #parser.print_values()
+    
+    # get the themes
+    with open(opts.theme_file, "r") as f:
+        list_of_themes = f.read().splitlines()
+   
+    # do it live!
+    client.run(opts.bot_token)
