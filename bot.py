@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # setup/process args
     parser = configargparse.ArgParser()
     parser.add("-t", "--bot-token", env_var="BOT_TOKEN", required=True, help="Discord bot API token")
-    parser.add("-f", "--theme-file", env_var="THEME_FILE", default="themes.txt", help="File comtaining themes one per line")
+    parser.add("-f", "--theme-file", env_var="THEME_FILE", default="themes.txt", help="File containing themes one per line")
     opts = parser.parse_args()
     #parser.print_values()
     
