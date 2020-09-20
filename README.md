@@ -15,7 +15,7 @@ The TIRD Discord servers slightly kinda buggy, kinda high assistant
 Or..
 
 1. Build: `docker build -t weedgummiesbot .`
-2. Run: `docker run --rm -v `pwd`:/usr/src/app -e BOT_TOKEN=token weedgummiesbot`
+2. Run: `docker run --rm -v $(pwd):/usr/src/app -e BOT_TOKEN=token weedgummiesbot`
 
 #### Python Virtual Env (legacy)
 
