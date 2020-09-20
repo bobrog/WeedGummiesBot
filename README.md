@@ -1,6 +1,6 @@
 # WeedGummiesBot
 
-The TIRD Discord servers slightly kinda buggy, kinda high assistant
+The TIRD Discord servers kinda buggy, kinda high assistant
 
 ### Usage
 
