@@ -3,7 +3,8 @@
 set -ex
 
 #conf
-image_name=weedgummiesbot
+: ${image_name=weedgummiesbot}
+: ${env_file=example.env}
 
 # build
 docker build -t ${image_name} .
@@ -12,5 +13,5 @@ docker build -t ${image_name} .
 docker run \
     --rm \
     -v `pwd`:/usr/src/app \
-    -e BOT_TOKEN \
+    --env-file ${env_file} \
     ${image_name} ${@}
