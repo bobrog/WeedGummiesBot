@@ -1,3 +1,4 @@
 discord==1.0.1
 discord.py==1.4.1
 ConfigArgParse==1.2.3
+gspread==3.6.0
