@@ -4,7 +4,7 @@ set -ex
 
 #conf
 : ${image_name=weedgummiesbot}
-: ${env_file=.env/prod.env}
+: ${env_file=example.env}
 
 # build
 docker build -t ${image_name} .
