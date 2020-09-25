@@ -8,7 +8,7 @@ The TIRD Discord servers kinda buggy, kinda high assistant
 
 * Registered Discord bot and token (see link in resources)
 * Google API service account key (see link in resources)
-* Docker `brew cask install docker` 
+* Docker `brew cask install docker`
  
 
 #### Docker
