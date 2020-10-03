@@ -6,6 +6,7 @@ import discord
 import configargparse
 import gspread
 import logging
+import json
 
 client = discord.Client()
 
@@ -33,7 +34,8 @@ async def on_message(message):
         await message.channel.send(say)
 
 def gsheet_themes():
-    themes = gsheet.col_values(opts.gsheet_col)[opts.gsheet_col_offset:]
+    worksheet = gsheet.worksheet(opts.gsheet_worksheet)
+    themes = worksheet.col_values(opts.gsheet_col)[opts.gsheet_col_offset:]
     return list(filter(None, themes))
 
 if __name__ == "__main__":
@@ -46,8 +48,8 @@ if __name__ == "__main__":
                 help="File containing themes one per line")
     parser.add("--stoner-file", env_var="STONER_FILE", default="stonertalk.txt",
                 help="File containing stoner sayings")
-    parser.add("--gsheet-creds-file", env_var="GSHEET_CREDS_FILE",
-                help="Google API Service account key JSON file")
+    parser.add("--gsheet-creds", env_var="GSHEET_CREDS",
+                help="Google API Service account key JSON string")
     parser.add("--gsheet-key", env_var="GSHEET_KEY")
     parser.add("--gsheet-worksheet", env_var="GSHEET_WORKSHEET")
     parser.add("--gsheet-col", env_var="GSHEET_COL", type=int)
@@ -63,13 +65,13 @@ if __name__ == "__main__":
     logging.basicConfig(level=logger_level,
                         format=logger_format)
 
+
     # init themes
-    if (opts.gsheet_creds_file != None and
-        os.path.isfile(opts.gsheet_creds_file)):
+    if opts.gsheet_creds != None:
         # get themes from Google Sheet column
-        gauth = gspread.service_account(filename=opts.gsheet_creds_file)
+        gauth_key = json.loads(opts.gsheet_creds)
+        gauth = gspread.service_account_from_dict(gauth_key)
         gsheet = gauth.open_by_key(opts.gsheet_key)
-        gsheet.worksheet(opts.gsheet_worksheet)
         list_of_themes = gsheet_themes
         logging.info("themes from GSheets")
     else:
