@@ -23,6 +23,7 @@ async def on_message(message):
         # stoner speak
         say = random.choice(stoner_sayings)
         logging.info("stoner: {}".format(say))
+        await message.channel.send(say)
 
         #await message.channel.send(say)
     elif message.content.startswith('$newtheme'):
