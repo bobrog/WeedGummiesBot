@@ -3,8 +3,8 @@
 set -ex
 
 #conf
-: ${image_name=weedgummiesbot}
-: ${env_file=example.env}
+: ${image_name:=weedgummiesbot}
+: ${env_file:=example.env}
 
 # build
 docker build -t ${image_name} .

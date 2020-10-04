@@ -1,4 +1,4 @@
 discord==1.0.1
 discord.py==1.4.1
 ConfigArgParse==1.2.3
-gspread==3.6.0
+git+https://github.com/burnash/gspread.git@db2a424e7c306e36d1e0649c9a31f11dce457296
