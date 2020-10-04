@@ -25,8 +25,6 @@ async def on_message(message):
         say = random.choice(stoner_sayings)
         logging.info("stoner: {}".format(say))
         await message.channel.send(say)
-
-        #await message.channel.send(say)
     elif message.content.startswith('$newtheme'):
         # theme
         say = random.choice(list_of_themes())
@@ -86,6 +84,8 @@ if __name__ == "__main__":
         with open(opts.stoner_file, "r") as f:
             stoner_sayings = f.read().splitlines()
         logging.info("stoner speak from file {}".format(opts.stoner_file))
+    else:
+        stoner_sayings = ["i ran out of things to say"]
 
     # do it live!
     client.run(opts.discord_token)
