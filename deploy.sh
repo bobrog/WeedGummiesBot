@@ -3,7 +3,7 @@
 set -ex
 
 #conf
-: ${git_branch:=`git branch --show-current`}
+: ${git_branch:=`git rev-parse --abbrev-ref HEAD`}
 : ${image_name:=weedgummiesbot}
 : ${env_file:=.env/prod.env}
 git_hash=`git rev-parse HEAD`
