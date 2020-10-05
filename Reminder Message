@@ -8,18 +8,39 @@ import configargparse
 import gspread
 import logging
 import json
+import schedule
+import time
 
 @client.event
 async def on_ready():
     logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
     
-    var server = get_server('691307693008355358');
-    if (server && get_channel('748703452615540756')){
+    server = get_server('691307693008355358');
+    if (server and get_channel('748703452615540756')):
         await client.send_message(client.get_channel('748703452615540756'),"Reminder test").then(() => client.destroy());
-    } else {
-        console.log("nope");
+    elif 
+     console.log("nope")
         //if the bot doesn't have guild with the id guildid
         // or if the guild doesn't have the channel with id channelid
-    }
+    
    # client.destroy();
 });
+
+# cron job, i think
+import schedule
+import time
+
+def job():
+    print("I'm working...")
+
+schedule.every(10).minutes.do(job)
+schedule.every().hour.do(job)
+schedule.every().day.at("10:30").do(job)
+schedule.every(5).to(10).minutes.do(job)
+schedule.every().monday.do(job)
+schedule.every().wednesday.at("13:15").do(job)
+schedule.every().minute.at(":17").do(job)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
