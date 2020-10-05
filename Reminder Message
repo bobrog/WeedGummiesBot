@@ -1,0 +1,25 @@
+const Discord = require('discord.js');
+const client = new Discord.Client();
+
+import os
+import random
+import discord
+import configargparse
+import gspread
+import logging
+import json
+
+@client.event
+async def on_ready():
+    logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
+    
+    var server = get_server('691307693008355358');
+    if(server && get_channel('748703452615540756')){
+        await client.send_message(client.get_channel('748703452615540756'),"Reminder test").then(() => client.destroy());
+    } else {
+        console.log("nope");
+        //if the bot doesn't have guild with the id guildid
+        // or if the guild doesn't have the channel with id channelid
+    }
+    client.destroy();
+});
