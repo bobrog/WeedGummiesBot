@@ -26,12 +26,20 @@ async def on_ready():
 @client.event
 async def on_ready():
     logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
-def better_reminder
+def better_reminder():
+#get hour - still need to convert this to EST
 hour = int(datetime.datetime.now().time().strftime("%H"))
+#get minute
 minute = int(datetime.datetime.now().time().strftime("%M"))
+#check if in fire window
 if hour == 13 and minute >= 30:
     channel = get_channel(748703452615540756)
-    await channel.send('reminder message)
+    await message.channel.send('reminder message')
+elif hour >= 15:
+    channel = get_channel(748703452615540756)
+    say = random.choice(list_of_themes())
+    logging.info("theme: {}".format(say))
+    await message.channel.send(say)
 await asyncio.sleep(3600)
 
 # cron job stuff i stole
