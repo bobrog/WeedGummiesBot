@@ -8,6 +8,7 @@ import json
 import schedule
 import time
 import datetime
+import calendar
 
 @client.event
 async def on_ready():
@@ -27,15 +28,18 @@ async def on_ready():
 async def on_ready():
     logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
 def better_reminder():
+#get day
+now = (datetime.datetime.now())
+day = (calendar.day_name[now.weekday()])
 #get hour - still need to convert this to EST
 hour = int(datetime.datetime.now().time().strftime("%H"))
 #get minute
 minute = int(datetime.datetime.now().time().strftime("%M"))
 #check if in fire window
-if hour == 13 and minute >= 30:
+if  day == "Sunday" and hour == 13 and minute <= 59:
     channel = get_channel(748703452615540756)
     await message.channel.send('reminder message')
-elif hour >= 15:
+elif day == "Sunday" and hour >= 15:
     channel = get_channel(748703452615540756)
     say = random.choice(list_of_themes())
     logging.info("theme: {}".format(say))
