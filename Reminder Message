@@ -13,15 +13,26 @@ import datetime
 async def on_ready():
     logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
  #reminder
- def reminder():
+ #def reminder():
   # check day of the week
-    if date(now).weekday() == 1:
+    #if date(now).weekday() == 1:
     # send reminder to music channel
     channel = get_channel(748703452615540756)
-    await channel.send('reminder test') 
+   # await channel.send('reminder test') 
 
 
 });
+
+@client.event
+async def on_ready():
+    logging.info('We have logged in as {0.user}'.format(client))client = discord.Client()
+def better_reminder
+hour = int(datetime.datetime.now().time().strftime("%H"))
+minute = int(datetime.datetime.now().time().strftime("%M"))
+if hour == 13 and minute >= 30:
+    channel = get_channel(748703452615540756)
+    await channel.send('reminder message)
+await asyncio.sleep(3600)
 
 # cron job stuff i stole
 
