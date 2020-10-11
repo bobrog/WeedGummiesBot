@@ -3,16 +3,60 @@
 import os
 import random
 import discord
+from discord.ext import tasks
 import configargparse
 import gspread
 import logging
 import json
+import datetime
+import pytz
 
 client = discord.Client()
+
+@tasks.loop(seconds=3600)
+async def theme_task():
+    logging.info("theme_task: woke up")
+
+    # get channel - a better way of doing this probably exists
+    for c in client.get_all_channels():
+        if (c.name == opts.reminder_chan_name and
+            c.type.name == discord.ChannelType.text.name):
+            c_id = c.id
+            break
+
+    try:
+        logging.info("theme_task: '{}' has id {}".format(
+            opts.reminder_chan_name, c_id))
+    except NameError:
+        logging.warn("theme_task: '{}' id not found".format(
+            opts.reminder_chan_name))
+        return
+
+    channel = client.get_channel(c_id)
+
+    # get current time
+    now = datetime.datetime.now(tz=pytz.timezone(opts.reminder_tz))
+    day = now.strftime("%A")
+    hour = now.hour
+    minute = now.minute
+    #check if in fire window
+    if day == "Sunday" and hour == 13:
+        say = "New playlist theme drops soon! " \
+              "Get your suggestions into the spreadshite"
+        logging.info("theme_task: {}".format(say))
+        await channel.send(say)
+    elif day == "Sunday" and hour == 15:
+        say = "The new playlist theme is ... {}".format(
+                random.choice(list_of_themes()))
+        logging.info("theme_task: {}".format(say))
+        await channel.send(say)
+    else:
+        logging.info("theme_task: nothing to do")
 
 @client.event
 async def on_ready():
     logging.info('We have logged in as {0.user}'.format(client))
+    theme_task.start()
 
 @client.event
 async def on_message(message):
@@ -53,6 +97,10 @@ if __name__ == "__main__":
     parser.add("--gsheet-col", env_var="GSHEET_COL", type=int)
     parser.add("--gsheet-col-offset", env_var="GSHEET_COL_OFFSET", type=int)
     parser.add("--log-level", env_var="LOG_LEVEL", default="INFO")
+    parser.add("--reminder-tz", env_var="REMINDER_TZ",
+                default="America/New_York")
+    parser.add("--reminder-chan-name", env_var="REMINDER_CHAN_NAME",
+                default="music-andotherstuffrelated")
 
     opts = parser.parse_args()
     parser.print_values()
