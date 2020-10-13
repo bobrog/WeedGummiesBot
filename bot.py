@@ -64,13 +64,12 @@ async def on_message(message):
         client.user.id in [ m.id for m in message.mentions ]):
         # stoner speak
         global stoner_offset
-        logging.info(str(stoner_offset))
         if stoner_offset > len(stoner_sayings) - 1:
             stoner_offset = 0
         say = stoner_sayings[stoner_offset]
+        stoner_offset = stoner_offset + 1
         logging.info("stoner: {}".format(say))
         await message.channel.send(say)
-        stoner_offset = stoner_offset + 1
     elif message.content.startswith('$newtheme'):
         # theme
         say = random.choice(list_of_themes())
