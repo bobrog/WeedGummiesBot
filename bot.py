@@ -17,22 +17,19 @@ client = discord.Client()
 async def theme_task():
     logging.info("theme_task: woke up")
 
-    # get channel - a better way of doing this probably exists
-    for c in client.get_all_channels():
-        if (c.name == opts.reminder_chan_name and
-            c.type.name == discord.ChannelType.text.name):
-            c_id = c.id
-            break
+    # get channel
+    channel = discord.utils.get(
+                client.get_all_channels(),
+                name=opts.reminder_chan_name,
+                type__name=discord.ChannelType.text.name)
 
-    try:
-        logging.info("theme_task: '{}' has id {}".format(
-            opts.reminder_chan_name, c_id))
-    except NameError:
-        logging.warn("theme_task: '{}' id not found".format(
+    if channel == None:
+        logging.warning("theme_task: '{}' id not found".format(
             opts.reminder_chan_name))
         return
 
-    channel = client.get_channel(c_id)
+    logging.info("theme_task: '{}' has id {}".format(
+        opts.reminder_chan_name, channel.id))
 
     # get current time
     now = datetime.datetime.now(tz=pytz.timezone(opts.reminder_tz))
@@ -66,9 +63,14 @@ async def on_message(message):
     if (message.content.startswith('$hello') or
         client.user.id in [ m.id for m in message.mentions ]):
         # stoner speak
-        say = random.choice(stoner_sayings)
+        global stoner_offset
+        logging.info(str(stoner_offset))
+        if stoner_offset > len(stoner_sayings) - 1:
+            stoner_offset = 0
+        say = stoner_sayings[stoner_offset]
         logging.info("stoner: {}".format(say))
         await message.channel.send(say)
+        stoner_offset = stoner_offset + 1
     elif message.content.startswith('$newtheme'):
         # theme
         say = random.choice(list_of_themes())
@@ -134,6 +136,8 @@ if __name__ == "__main__":
         logging.info("stoner speak from file {}".format(opts.stoner_file))
     else:
         stoner_sayings = ["i ran out of things to say"]
+
+    stoner_offset = random.randint(0, len(stoner_sayings) - 1)
 
     # do it live!
     client.run(opts.discord_token)
