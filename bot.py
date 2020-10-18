@@ -38,8 +38,7 @@ async def theme_task():
     minute = now.minute
     #check if in fire window
     if day == "Sunday" and hour == 13:
-        say = "New playlist theme drops soon! " \
-              "Get your suggestions into the spreadshite"
+        say = random.choice(reminder_sayings)
         logging.info("theme_task: {}".format(say))
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
@@ -102,6 +101,8 @@ if __name__ == "__main__":
                 default="America/New_York")
     parser.add("--reminder-chan-name", env_var="REMINDER_CHAN_NAME",
                 default="music-andotherstuffrelated")
+    parser.add("--reminder-file", env_var="REMINDER_FILE",
+                default="reminder.txt")
 
     opts = parser.parse_args()
     parser.print_values()
@@ -137,6 +138,15 @@ if __name__ == "__main__":
         stoner_sayings = ["i ran out of things to say"]
 
     stoner_offset = random.randint(0, len(stoner_sayings) - 1)
+
+    # init reminder messages
+    if opts.reminder_file != None and os.path.isfile(opts.reminder_file):
+        with open(opts.reminder_file, "r") as f:
+            reminder_sayings = f.read().splitlines()
+        logging.info("reminders speak from file {}".format(opts.reminder_file))
+    else:
+        reminder_sayings = ["New playlist theme drops soon! " \
+                            "Get your suggestions into the spreadshite"]
 
     # do it live!
     client.run(opts.discord_token)
