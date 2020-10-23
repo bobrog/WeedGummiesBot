@@ -13,15 +13,17 @@ import pytz
 
 client = discord.Client()
 
+def get_music_channel():
+    return discord.utils.get(
+                client.get_all_channels(),
+                name=opts.reminder_chan_name,
+                type__name=discord.ChannelType.text.name)
+
 @tasks.loop(seconds=3600)
 async def theme_task():
     logging.info("theme_task: woke up")
 
-    # get channel
-    channel = discord.utils.get(
-                client.get_all_channels(),
-                name=opts.reminder_chan_name,
-                type__name=discord.ChannelType.text.name)
+    channel = get_music_channel()
 
     if channel == None:
         logging.warning("theme_task: '{}' id not found".format(
@@ -59,7 +61,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if (message.content.startswith('$hello') or
+    if (message.content.startswith('+weed') or
         client.user.id in [ m.id for m in message.mentions ]):
         # stoner speak
         global stoner_offset
@@ -69,11 +71,24 @@ async def on_message(message):
         stoner_offset = stoner_offset + 1
         logging.info("stoner: {}".format(say))
         await message.channel.send(say)
-    elif message.content.startswith('$newtheme'):
+    elif message.content.startswith('+newtheme'):
         # theme
         say = random.choice(list_of_themes())
         logging.info("theme: {}".format(say))
         await message.channel.send(say)
+    elif message.content.startswith('+help'):
+        logging.info("help msg")
+        helpemb = discord.Embed(
+                description="** WeedGummies is a kinda buggy, kinda high bot **"
+                    + "\n <@{}> for deep thoughts".format(client.user.id)
+                    + "\n\n ** Music Stuff **"
+                    + "\n Selects a new playlist theme Sunday afternoon in \
+                        <#{}>".format(getattr(get_music_channel(), "id",
+                            opts.reminder_chan_name))
+                    + "\n `+newtheme` draw a random theme from the spreadshite",
+                    colour=0x67eb34,
+               )
+        await message.channel.send(embed=helpemb)
 
 def gsheet_themes():
     worksheet = gsheet.worksheet(opts.gsheet_worksheet)
