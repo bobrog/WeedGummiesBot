@@ -2,36 +2,74 @@
 
 import os
 import random
-import discord
-from discord.ext import tasks
 import configargparse
 import gspread
 import logging
 import json
 import datetime
 import pytz
+import discord
+from discord.ext import tasks, commands
 
-client = discord.Client()
+bot = commands.Bot("+", help_command=None)
 
 def get_music_channel():
     return discord.utils.get(
-                client.get_all_channels(),
+                bot.get_all_channels(),
                 name=opts.reminder_chan_name,
                 type__name=discord.ChannelType.text.name)
 
-@tasks.loop(seconds=3600)
-async def theme_task():
-    logging.info("theme_task: woke up")
+def gsheet_themes():
+    worksheet = gsheet.worksheet(opts.gsheet_worksheet)
+    themes = worksheet.col_values(opts.gsheet_col)[opts.gsheet_col_offset:]
+    return list(filter(None, themes))
 
+def get_stonerism():
+    # stoner speak
+    global stoner_offset
+    if stoner_offset > len(stoner_sayings) - 1:
+        stoner_offset = 0
+    say = stoner_sayings[stoner_offset]
+    stoner_offset = stoner_offset + 1
+    logging.info("stoner: {}".format(say))
+    return(say)
+
+def get_theme(fmt="{}"):
+    try:
+        say = fmt.format(random.choice(list_of_themes()))
+    except IndexError:
+        say = "Theme list is empty!"
+
+    return say
+
+@bot.command()
+async def help(ctx):
+    logging.info("help msg")
+    helpemb = discord.Embed(
+            description="** WeedGummies is a kinda buggy, kinda high bot **"
+                + "\n <@{}> for deep thoughts".format(bot.user.id)
+                + "\n\n ** Music Stuff **"
+                + "\n Selects a new playlist theme Sunday afternoon in \
+                    <#{}>".format(getattr(get_music_channel(), "id",
+                        opts.reminder_chan_name))
+                + "\n `+newtheme` draw a random theme from the spreadshite",
+                colour=0x67eb34,
+            )
+    await ctx.send(embed=helpemb)
+
+@tasks.loop(seconds=3600)
+async def newtheme_task():
+    logging.info("newtheme_task: woke up")
     channel = get_music_channel()
 
     if channel == None:
-        logging.warning("theme_task: '{}' id not found".format(
+        logging.warning("newtheme_task: '{}' id not found".format(
             opts.reminder_chan_name))
         return
 
-    logging.info("theme_task: '{}' has id {}".format(
-        opts.reminder_chan_name, channel.id))
+    logging.info("newtheme_task: '{}' has id {}".format(
+        opts.reminder_chan_name,
+        channel.id))
 
     # get current time
     now = datetime.datetime.now(tz=pytz.timezone(opts.reminder_tz))
@@ -41,59 +79,37 @@ async def theme_task():
     #check if in fire window
     if day == "Sunday" and hour == 13:
         say = random.choice(reminder_sayings)
-        logging.info("theme_task: {}".format(say))
+        logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
-        say = "The new playlist theme is ... {}".format(
-                random.choice(list_of_themes()))
-        logging.info("theme_task: {}".format(say))
+        say = get_theme("The new playlist theme is ... {}")
+        logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
     else:
-        logging.info("theme_task: nothing to do")
+        logging.info("newtheme_task: nothing to do")
 
-@client.event
+@bot.event
 async def on_ready():
-    logging.info('We have logged in as {0.user}'.format(client))
-    theme_task.start()
+    logging.info("We have logged in as {0.user}".format(bot))
+    newtheme_task.start()
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
+@bot.command()
+async def weed(ctx):
+    await ctx.send(get_stonerism())
+
+@bot.listen("on_message")
+async def weed_listen(message):
+    if message.author == bot.user:
         return
 
-    if (message.content.startswith('+weed') or
-        client.user.id in [ m.id for m in message.mentions ]):
-        # stoner speak
-        global stoner_offset
-        if stoner_offset > len(stoner_sayings) - 1:
-            stoner_offset = 0
-        say = stoner_sayings[stoner_offset]
-        stoner_offset = stoner_offset + 1
-        logging.info("stoner: {}".format(say))
-        await message.channel.send(say)
-    elif message.content.startswith('+newtheme'):
-        # theme
-        say = random.choice(list_of_themes())
-        logging.info("theme: {}".format(say))
-        await message.channel.send(say)
-    elif message.content.startswith('+help'):
-        logging.info("help msg")
-        helpemb = discord.Embed(
-                description="** WeedGummies is a kinda buggy, kinda high bot **"
-                    + "\n <@{}> for deep thoughts".format(client.user.id)
-                    + "\n\n ** Music Stuff **"
-                    + "\n Selects a new playlist theme Sunday afternoon in \
-                        <#{}>".format(getattr(get_music_channel(), "id",
-                            opts.reminder_chan_name))
-                    + "\n `+newtheme` draw a random theme from the spreadshite",
-                    colour=0x67eb34,
-               )
-        await message.channel.send(embed=helpemb)
+    if bot.user.id in [ m.id for m in message.mentions ]:
+        await message.channel.send(get_stonerism())
 
-def gsheet_themes():
-    worksheet = gsheet.worksheet(opts.gsheet_worksheet)
-    themes = worksheet.col_values(opts.gsheet_col)[opts.gsheet_col_offset:]
-    return list(filter(None, themes))
+@bot.command()
+async def newtheme(ctx):
+    say = get_theme("Here is a theme ... {}")
+    logging.info("newtheme: {}".format(say))
+    await ctx.send(say)
 
 if __name__ == "__main__":
     # setup/process args
@@ -127,7 +143,6 @@ if __name__ == "__main__":
     logger_format = "%(asctime)s %(name)-20s %(levelname)-8s %(message)s"
     logging.basicConfig(level=logger_level,
                         format=logger_format)
-
 
     # init themes
     if opts.gsheet_creds != None:
@@ -164,4 +179,4 @@ if __name__ == "__main__":
                             "Get your suggestions into the spreadshite"]
 
     # do it live!
-    client.run(opts.discord_token)
+    bot.run(opts.discord_token)
