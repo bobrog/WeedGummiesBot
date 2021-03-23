@@ -9,7 +9,10 @@ import json
 import datetime
 import pytz
 import discord
+import spotipy
 from discord.ext import tasks, commands
+from spotipy.oauth2 import SpotifyOAuth
+
 
 bot = commands.Bot("+", help_command=None)
 
@@ -111,6 +114,36 @@ async def newtheme(ctx):
     logging.info("newtheme: {}".format(say))
     await ctx.send(say)
 
+@bot.command()
+async def playlist(ctx, *args):
+    logging.info("playlist: invoked by '{}' with args '{}'".format(
+        ctx.message.author.name,
+        " ".join(args)))
+
+    if (opts.spotify_allowed_users != None and 
+        ctx.message.author.name not in opts.spotify_allowed_users.split()):
+        say = "Playlist creation is restricted"
+        logging.error("playlist: {}".format(say))
+        await ctx.send(say)
+        return
+
+    if len(args) < 1:
+        say = "No playlist name provided"
+        logging.error("playlist: {}".format(say))
+        await ctx.send(say)
+        return
+
+    name = "Tird Tunes - {}".format(" ".join(args))
+    res = sp.user_playlist_create(sp.me()['id'],
+                            name=name,
+                            public=False,
+                            collaborative=True)
+
+    logging.info("playlist: created playlist '{}' {}".format(name, res))
+    await ctx.send("Created playlist {} {}".format(
+        res.get("name"),
+        res.get("external_urls").get("spotify")))
+
 if __name__ == "__main__":
     # setup/process args
     parser = configargparse.ArgParser()
@@ -134,6 +167,18 @@ if __name__ == "__main__":
                 default="music-andotherstuffrelated")
     parser.add("--reminder-file", env_var="REMINDER_FILE",
                 default="reminder.txt")
+    parser.add("--spotify-client-id", env_var="SPOTIFY_CLIENT_ID")
+    parser.add("--spotify-client-secret", env_var="SPOTIFY_CLIENT_SECRET")
+    parser.add("--spotify-client-token", env_var="SPOTIFY_CLIENT_TOKEN")
+    parser.add("--spotify-cache-path", env_var="SPOTIFY_CACHE_PATH",
+                default=".env/spotify")
+    parser.add("--spotify-scope", env_var="SPOTIFY_SCOPE",
+                default=" ".join([
+                    "playlist-modify-private",
+                    "playlist-read-collaborative",
+                    "playlist-modify-public"
+                ]))
+    parser.add("--spotify-allowed-users", env_var="SPOTIFY_ALLOWED_USERS")
 
     opts = parser.parse_args()
     parser.print_values()
@@ -177,6 +222,21 @@ if __name__ == "__main__":
     else:
         reminder_sayings = ["New playlist theme drops soon! " \
                             "Get your suggestions into the spreadshite"]
+
+    # init spotify
+    if opts.spotify_client_token:
+        with open(opts.spotify_cache_path, mode="w+") as f:
+            f.write(opts.spotify_client_token)
+
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+        client_id=opts.spotify_client_id,
+        client_secret=opts.spotify_client_secret,
+        redirect_uri="http://127.0.0.1:8080",
+        open_browser=False,
+        scope=opts.spotify_scope,
+        cache_path=opts.spotify_cache_path))
+
+    logging.info("spotify username {}".format(sp.current_user().get("display_name")))
 
     # do it live!
     bot.run(opts.discord_token)
