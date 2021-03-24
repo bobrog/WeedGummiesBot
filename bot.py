@@ -45,6 +45,13 @@ def get_theme(fmt="{}"):
 
     return say
 
+def create_playlist(theme, fmt="Tird Tunes - {}"):
+    return sp.user_playlist_create(
+        sp.me()["id"],
+        name=fmt.format(theme),
+        public=False,
+        collaborative=True)
+
 @bot.command()
 async def help(ctx):
     logging.info("help msg")
@@ -85,9 +92,14 @@ async def newtheme_task():
         logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
-        say = get_theme("The new playlist theme is ... {}")
+        theme = get_theme()
+        res = create_playlist(theme)
+        say = "The new playlist theme is ... {} {}".format(
+            theme,
+            res.get("external_urls").get("spotify"))
         logging.info("newtheme_task: {}".format(say))
-        await channel.send(say)
+        mes = await channel.send(say)
+        await mes.pin()
     else:
         logging.info("newtheme_task: nothing to do")
 
@@ -133,21 +145,17 @@ async def playlist(ctx, *args):
         await ctx.send(say)
         return
 
-    name = "Tird Tunes - {}".format(" ".join(args))
-    res = sp.user_playlist_create(sp.me()['id'],
-                            name=name,
-                            public=False,
-                            collaborative=True)
-
-    logging.info("playlist: created playlist '{}' {}".format(name, res))
-    await ctx.send("Created playlist {} {}".format(
+    res = create_playlist(" ".join(args))
+    logging.info("playlist: created playlist '{}'".format(res.get("name")))
+    mes = await ctx.send("Created playlist {} {}".format(
         res.get("name"),
         res.get("external_urls").get("spotify")))
+    await mes.pin()
 
 if __name__ == "__main__":
     # setup/process args
     parser = configargparse.ArgParser()
-    parser.add("--config-file", is_config_file=True, help='config file path')
+    parser.add("--config-file", is_config_file=True, help="config file path")
     parser.add("--discord-token", env_var="DISCORD_TOKEN", required=True,
                 help="Discord bot API token")
     parser.add("--theme-file", env_var="THEME_FILE", default="themes.txt",
