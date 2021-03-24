@@ -93,10 +93,10 @@ async def newtheme_task():
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
         theme = get_theme()
-        res = create_playlist(theme)
+        playlist = create_playlist(theme)
         say = "The new playlist theme is ... {} {}".format(
             theme,
-            res.get("external_urls").get("spotify"))
+            playlist.get("external_urls").get("spotify"))
         logging.info("newtheme_task: {}".format(say))
         mes = await channel.send(say)
         await mes.pin()
@@ -145,11 +145,11 @@ async def playlist(ctx, *args):
         await ctx.send(say)
         return
 
-    res = create_playlist(" ".join(args))
-    logging.info("playlist: created playlist '{}'".format(res.get("name")))
+    playlist = create_playlist(" ".join(args))
+    logging.info("playlist: created playlist '{}'".format(playlist.get("name")))
     mes = await ctx.send("Created playlist {} {}".format(
-        res.get("name"),
-        res.get("external_urls").get("spotify")))
+        playlist.get("name"),
+        playlist.get("external_urls").get("spotify")))
     await mes.pin()
 
 if __name__ == "__main__":
