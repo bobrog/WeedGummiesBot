@@ -13,7 +13,6 @@ import spotipy
 from discord.ext import tasks, commands
 from spotipy.oauth2 import SpotifyOAuth
 
-
 bot = commands.Bot("+", help_command=None)
 
 def get_music_channel():
@@ -59,10 +58,11 @@ async def help(ctx):
             description="** WeedGummies is a kinda buggy, kinda high bot **"
                 + "\n <@{}> for deep thoughts".format(bot.user.id)
                 + "\n\n ** Music Stuff **"
-                + "\n Selects a new playlist theme Sunday afternoon in \
+                + "\n New playlist drops Sunday afternoon in \
                     <#{}>".format(getattr(get_music_channel(), "id",
                         opts.reminder_chan_name))
-                + "\n `+newtheme` draw a random theme from the spreadshite",
+                + "\n `+newtheme` print a random theme from the spreadshite"
+                + "\n `+playlist NAME` creates a new playlist",
                 colour=0x67eb34,
             )
     await ctx.send(embed=helpemb)
