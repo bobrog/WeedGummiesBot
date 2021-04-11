@@ -22,7 +22,6 @@ def get_music_channel():
                 type__name=discord.ChannelType.text.name)
 
 def gsheet_themes():
-    worksheet = gsheet.worksheet(opts.gsheet_worksheet)
     themes = worksheet.col_values(opts.gsheet_col)[opts.gsheet_col_offset:]
     return list(filter(None, themes))
 
@@ -36,13 +35,21 @@ def get_stonerism():
     logging.info("stoner: {}".format(say))
     return(say)
 
-def get_theme(fmt="{}"):
+def get_theme():
     try:
-        say = fmt.format(random.choice(list_of_themes()))
+        theme = random.choice(list_of_themes())
     except IndexError:
-        say = "Theme list is empty!"
+        theme = None
 
-    return say
+    return theme
+
+def delete_theme(theme):
+    if opts.gsheet_creds == None:
+        file_themes.remove(theme)
+    else:
+        cell = worksheet.find(theme,in_column=opts.gsheet_col)
+        worksheet.delete_rows(cell.row)
+    logging.info("delete_theme: {}".format(theme))
 
 def create_playlist(theme, fmt="Tird Tunes - {}"):
     return sp.user_playlist_create(
@@ -61,8 +68,9 @@ async def help(ctx):
                 + "\n New playlist drops Sunday afternoon in \
                     <#{}>".format(getattr(get_music_channel(), "id",
                         opts.reminder_chan_name))
-                + "\n `+newtheme` print a random theme from the spreadshite"
-                + "\n `+playlist NAME` creates a new playlist",
+                + "\n `+gettheme` print a random theme from the spreadshite"
+                + "\n `+playlist NAME` create a playlist"
+                + "\n `+drawplaylist` draws a random theme and creates playlist",
                 colour=0x67eb34,
             )
     await ctx.send(embed=helpemb)
@@ -92,14 +100,7 @@ async def newtheme_task():
         logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
-        theme = get_theme()
-        playlist = create_playlist(theme)
-        say = "The new playlist theme is ... {} {}".format(
-            theme,
-            playlist.get("external_urls").get("spotify"))
-        logging.info("newtheme_task: {}".format(say))
-        mes = await channel.send(say)
-        await mes.pin()
+        await drawplaylist(None)
     else:
         logging.info("newtheme_task: nothing to do")
 
@@ -121,9 +122,14 @@ async def weed_listen(message):
         await message.channel.send(get_stonerism())
 
 @bot.command()
-async def newtheme(ctx):
-    say = get_theme("Here is a theme ... {}")
-    logging.info("newtheme: {}".format(say))
+async def gettheme(ctx):
+    theme = get_theme()
+    if theme == None:
+        say = "Theme list is empty!"
+        logging.error("gettheme: {}".format(say))
+    else:
+        say = "Here is a theme ... {}".format(theme)
+        logging.info("gettheme: {}".format(say))
     await ctx.send(say)
 
 @bot.command()
@@ -151,6 +157,24 @@ async def playlist(ctx, *args):
         playlist.get("name"),
         playlist.get("external_urls").get("spotify")))
     await mes.pin()
+
+@bot.command()
+async def drawplaylist(ctx):
+    channel = get_music_channel()
+    theme = get_theme()
+    if theme == None:
+        say = "Out of themes!"
+        logging.error("drawplaylist: {}".format(say))
+        await channel.send(say)
+        return
+    playlist = create_playlist(theme)
+    say = "The new playlist theme is ... {} {}".format(
+        theme,
+        playlist.get("external_urls").get("spotify"))
+    logging.info("drawplaylist: {}".format(say))
+    mes = await channel.send(say)
+    await mes.pin()
+    delete_theme(theme)
 
 if __name__ == "__main__":
     # setup/process args
@@ -203,6 +227,7 @@ if __name__ == "__main__":
         gauth_key = json.loads(opts.gsheet_creds)
         gauth = gspread.service_account_from_dict(gauth_key)
         gsheet = gauth.open_by_key(opts.gsheet_key)
+        worksheet = gsheet.worksheet(opts.gsheet_worksheet)
         list_of_themes = gsheet_themes
         logging.info("themes from GSheets")
     else:
