@@ -175,6 +175,15 @@ async def drawplaylist(ctx):
     mes = await channel.send(say)
     await mes.pin()
     delete_theme(theme)
+    if opts.gsheet_creds != None:
+        now = datetime.datetime.now(tz=pytz.timezone(opts.reminder_tz))
+        worksheet_plist.append_row([
+            now.strftime("%m/%d/%Y"),
+            theme,
+            playlist.get("external_urls").get("spotify"),
+            playlist.get("id")
+        ])
+        logging.info("drawplaylist: added to playlist history")
 
 if __name__ == "__main__":
     # setup/process args
@@ -190,6 +199,7 @@ if __name__ == "__main__":
                 help="Google API Service account key JSON string")
     parser.add("--gsheet-key", env_var="GSHEET_KEY")
     parser.add("--gsheet-worksheet", env_var="GSHEET_WORKSHEET")
+    parser.add("--gsheet-plist-worksheet", env_var="GSHEET_PLIST_WORKSHEET")
     parser.add("--gsheet-col", env_var="GSHEET_COL", type=int)
     parser.add("--gsheet-col-offset", env_var="GSHEET_COL_OFFSET", type=int)
     parser.add("--log-level", env_var="LOG_LEVEL", default="INFO")
@@ -228,6 +238,7 @@ if __name__ == "__main__":
         gauth = gspread.service_account_from_dict(gauth_key)
         gsheet = gauth.open_by_key(opts.gsheet_key)
         worksheet = gsheet.worksheet(opts.gsheet_worksheet)
+        worksheet_plist = gsheet.worksheet(opts.gsheet_plist_worksheet)
         list_of_themes = gsheet_themes
         logging.info("themes from GSheets")
     else:
