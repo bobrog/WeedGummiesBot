@@ -79,8 +79,11 @@ async def util_lock_old_lists(ctx):
     for p in plist_ids[:-1]:
         logging.info("Locking and sharing previous list {}".format(
             sp.playlist(p, fields=["name"])))
-        sp.user_playlist_change_details(
-            sp.me()["id"], p, public=True, collaborative=False)
+        try:
+            sp.user_playlist_change_details(
+                sp.me()["id"], p, public=True, collaborative=False)
+        except spotipy.SpotifyException as e:
+            logging.error(e)
 
 
 @ bot.command()
