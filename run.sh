@@ -3,6 +3,7 @@
 set -ex
 
 #conf
+: ${git_branch:=`git rev-parse --abbrev-ref HEAD`}
 : ${image_name:=weedgummiesbot}
 : ${env_file:=example.env}
 
@@ -14,4 +15,5 @@ docker run \
     --rm \
     -v `pwd`:/usr/src/app \
     --env-file ${env_file} \
+    --env VERSION="${image_name}:${git_branch}" \
     ${image_name} ${@}

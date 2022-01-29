@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import traceback
 import random
 import configargparse
 import gspread
@@ -16,10 +17,10 @@ from spotipy.oauth2 import SpotifyOAuth
 bot = commands.Bot("+", help_command=None)
 
 
-def get_music_channel():
+def get_channel(channel_name):
     return discord.utils.get(
         bot.get_all_channels(),
-        name=opts.reminder_chan_name,
+        name=channel_name,
         type__name=discord.ChannelType.text.name)
 
 
@@ -65,11 +66,18 @@ def create_playlist(theme, fmt="Tird Tunes - {}"):
         collaborative=True)
 
 
+async def ops_message(message):
+    if opts.ops_chan_name == None:
+        return
+    channel = get_channel(opts.ops_chan_name)
+    await channel.send(message)
+
+
 @bot.command()
 async def util_lock_old_lists(ctx):
     if (opts.spotify_allowed_users != None and
-        ctx != None and
-        ctx.message.author.name not in opts.spotify_allowed_users.split()
+            ctx != None and
+            ctx.message.author.name not in opts.spotify_allowed_users.split()
         ):
         say = "Restricted"
         logging.error("util_lock_old_lists: {}".format(say))
@@ -94,7 +102,7 @@ async def help(ctx):
         + "\n <@{}> for deep thoughts".format(bot.user.id)
         + "\n\n ** Music Stuff **"
         + "\n New playlist drops Sunday afternoon in \
-                    <#{}>".format(getattr(get_music_channel(), "id",
+                    <#{}>".format(getattr(get_channel(opts.reminder_chan_name), "id",
                                           opts.reminder_chan_name))
         + "\n `+gettheme` print a random theme from the spreadshite"
         + "\n `+playlist NAME` create a playlist"
@@ -107,7 +115,7 @@ async def help(ctx):
 @ tasks.loop(seconds=3600)
 async def newtheme_task():
     logging.info("newtheme_task: woke up")
-    channel = get_music_channel()
+    channel = get_channel(opts.reminder_chan_name)
 
     if channel == None:
         logging.warning("newtheme_task: '{}' id not found".format(
@@ -129,7 +137,11 @@ async def newtheme_task():
         logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
     elif day == "Sunday" and hour == 15:
-        await drawplaylist(None)
+        try:
+            await drawplaylist(None)
+        except Exception as e:
+            logging.error(traceback.format_exc())
+            await ops_message("newtheme_task error: {}".format(e))
     else:
         logging.info("newtheme_task: nothing to do")
 
@@ -137,6 +149,7 @@ async def newtheme_task():
 @ bot.event
 async def on_ready():
     logging.info("We have logged in as {0.user}".format(bot))
+    await ops_message("started version {}".format(os.environ["VERSION"]))
     newtheme_task.start()
 
 
@@ -196,7 +209,7 @@ async def playlist(ctx, *args):
 
 @ bot.command()
 async def drawplaylist(ctx):
-    channel = get_music_channel()
+    channel = get_channel(opts.reminder_chan_name)
     theme = get_theme()
     if theme == None:
         say = "Out of themes!"
@@ -204,8 +217,8 @@ async def drawplaylist(ctx):
         await channel.send(say)
         return
     if (opts.spotify_allowed_users != None and
-        ctx != None and
-        ctx.message.author.name not in opts.spotify_allowed_users.split()
+            ctx != None and
+            ctx.message.author.name not in opts.spotify_allowed_users.split()
         ):
         say = "Playlist creation is restricted"
         logging.error("playlist: {}".format(say))
@@ -229,6 +242,14 @@ async def drawplaylist(ctx):
         ])
         logging.info("drawplaylist: added to playlist history")
         await util_lock_old_lists(None)
+
+
+@ bot.event
+async def on_command_error(ctx, error):
+    say = "{}: {}".format(ctx.command, error)
+    logging.error(say)
+    await ops_message(say)
+
 
 if __name__ == "__main__":
     # setup/process args
@@ -266,6 +287,7 @@ if __name__ == "__main__":
                    "playlist-modify-public"
                ]))
     parser.add("--spotify-allowed-users", env_var="SPOTIFY_ALLOWED_USERS")
+    parser.add("--ops-chan-name", env_var="OPS_CHAN_NAME")
 
     opts = parser.parse_args()
     parser.print_values()
