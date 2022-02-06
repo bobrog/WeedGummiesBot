@@ -159,11 +159,13 @@ async def weed(ctx):
 
 
 @ bot.listen("on_message")
-async def weed_listen(message):
+@ bot.listen("on_message_edit")
+async def weed_listen(message, message_new=None):
+    logging.info("here")
     if message.author == bot.user:
         return
 
-    if bot.user.id in [m.id for m in message.mentions]:
+    if bot.user.id in [m.id for m in message.mentions + getattr(message_new, "mentions", [])]:
         await message.channel.send(get_stonerism())
 
 
