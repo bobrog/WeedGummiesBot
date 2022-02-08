@@ -161,7 +161,6 @@ async def weed(ctx):
 @ bot.listen("on_message")
 @ bot.listen("on_message_edit")
 async def weed_listen(message, message_new=None):
-    logging.info("here")
     if message.author == bot.user:
         return
 
