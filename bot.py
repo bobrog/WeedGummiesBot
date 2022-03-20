@@ -78,15 +78,14 @@ async def util_lock_old_lists(ctx):
     if (opts.spotify_allowed_users != None and
             ctx != None and
             ctx.message.author.name not in opts.spotify_allowed_users.split()
-        ):
+            ):
         say = "Restricted"
         logging.error("util_lock_old_lists: {}".format(say))
         await ctx.send(say)
         return
     plist_ids = list(filter(None, worksheet_plist.col_values(4)[1:]))
     for p in plist_ids[:-1]:
-        logging.info("Locking and sharing previous list {}".format(
-            sp.playlist(p, fields=["name"])))
+        logging.info("Locking and sharing previous list {}".format(p))
         try:
             sp.user_playlist_change_details(
                 sp.me()["id"], p, public=True, collaborative=False)
@@ -220,7 +219,7 @@ async def drawplaylist(ctx):
     if (opts.spotify_allowed_users != None and
             ctx != None and
             ctx.message.author.name not in opts.spotify_allowed_users.split()
-        ):
+            ):
         say = "Playlist creation is restricted"
         logging.error("playlist: {}".format(say))
         await ctx.send(say)
