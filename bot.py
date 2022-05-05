@@ -131,11 +131,14 @@ async def newtheme_task():
     hour = now.hour
     minute = now.minute
     # check if in fire window
-    if day == "Sunday" and hour == 13:
-        say = random.choice(reminder_sayings)
+    if day == "Sunday" and hour == 11:
+        say = random.choice(reminder_sayings) + "\n" \
+            "There are {} themes in the pool. Check them out at {}".format(
+            len(list_of_themes()),
+            gsheet.url)
         logging.info("newtheme_task: {}".format(say))
         await channel.send(say)
-    elif day == "Sunday" and hour == 15:
+    elif day == "Sunday" and hour == 13:
         try:
             await drawplaylist(None)
         except Exception as e:
