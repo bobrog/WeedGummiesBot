@@ -17,7 +17,7 @@ docker run \
     --env-file ${env_file} \
     --entrypoint python \
     --label ${container_label} \
-    ${container_name} -u export2.py
+    ${container_name} -u export.py
 
 # cleanup docker
 docker rm `docker ps -a -f label=${container_label} -q | tail -n +2` || true
