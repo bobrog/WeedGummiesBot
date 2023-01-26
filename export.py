@@ -12,7 +12,8 @@ import time
 import pandas as pd
 from spotipy.oauth2 import SpotifyOAuth
 
-
+artist_cache = {}
+album_cache = {}
 def playlist_data_dump(pid, pdate):
     track_rows = []
 
@@ -22,8 +23,14 @@ def playlist_data_dump(pid, pdate):
     pid_tracks = playlist['tracks']['items']
     genres = []
     for track in pid_tracks:
-        artist = sp.artist(artist_id=track['track']['artists'][0]['id'])
-        album = sp.album(album_id=track['track']['album']['id'])
+        artist = artist_cache.get(track['track']['artists'][0]['id'],
+                                  sp.artist(artist_id=track['track']['artists'][0]['id']))
+        artist_cache.update({track['track']['artists'][0]['id'] : artist})
+
+        album = album_cache.get(track['track']['album']['id'],
+                                sp.album(album_id=track['track']['album']['id']))
+        album_cache.update({track['track']['album']['id'] : album})
+
         genre = artist['genres'][0] if len(artist['genres']) > 0 else ""
 
         track_rows.append([
