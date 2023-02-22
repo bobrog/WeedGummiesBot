@@ -2,5 +2,5 @@ discord.py==1.6.0
 ConfigArgParse==1.2.3
 gspread==3.7.0
 pytz==2020.01
-spotipy==2.19
+spotipy==2.22.1
 pandas==1.4.3
