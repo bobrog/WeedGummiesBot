@@ -1,5 +1,5 @@
 name: Build and Deploy
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Build and Deploy on PUSH
 on: push
 jobs:
   build:
@@ -11,3 +11,8 @@ jobs:
         run: docker build -t ci .
       - name: Pylint
         run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
+      - name: Deploy
+        if: ${{ github.ref_name == 'main' }}  
+        run: echo "deploying now"
+        if: ${{ github.ref_name != 'main' }}  
+        run: echo "skipping deploy"
