@@ -2,7 +2,7 @@ name: Build and Deploy
 run-name: Build and Deploy on PUSH
 on: push
 jobs:
-  ci-cd:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -11,7 +11,10 @@ jobs:
         run: docker build -t ci .
       - name: Pylint
         run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
-      - name: Deploy
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Vultr
         if: ${{ github.ref_name != 'main' }}  
         run: |
               echo "deploying now"
