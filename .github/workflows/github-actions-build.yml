@@ -13,6 +13,7 @@ jobs:
         run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
   deploy:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: Deploy to Vultr
         if: ${{ github.ref_name != 'main' }}  
