@@ -15,4 +15,7 @@ jobs:
         if: ${{ github.ref_name != 'main' }}  
         run: |
               echo "deploying now"
-              echo ${{ secrets.IP }}
+              mkdir ~/.ssh || true
+              echo ${{ secrets.SSH_KEY }} > ~/.ssh/id_rsa
+              chmod 0600 ~/.ssh/id_rsa
+              ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_IP }}
