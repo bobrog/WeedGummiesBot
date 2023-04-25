@@ -13,5 +13,6 @@ jobs:
         run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
       - name: Deploy
         if: ${{ github.ref_name != 'main' }}  
-        - run: echo "deploying now"
-        - run: echo ${{ secrets.IP }}
+      - run: |
+              echo "deploying now"
+              echo ${{ secrets.IP }}
