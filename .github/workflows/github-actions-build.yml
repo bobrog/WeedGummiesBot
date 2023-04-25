@@ -14,5 +14,3 @@ jobs:
       - name: Deploy
         if: ${{ github.ref_name == 'main' }}  
         run: echo "deploying now"
-        if: ${{ github.ref_name != 'main' }}  
-        run: echo "skipping deploy"
