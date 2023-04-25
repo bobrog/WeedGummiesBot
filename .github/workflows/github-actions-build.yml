@@ -2,7 +2,7 @@ name: Build and Deploy
 run-name: Build and Deploy on PUSH
 on: push
 jobs:
-  build:
+  ci-cd:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -12,5 +12,6 @@ jobs:
       - name: Pylint
         run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
       - name: Deploy
-        if: ${{ github.ref_name == 'main' }}  
+        if: ${{ github.ref_name != 'main' }}  
         run: echo "deploying now"
+        run: echo ${{ secrets.IP }}
