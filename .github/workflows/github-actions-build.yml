@@ -16,7 +16,7 @@ jobs:
     needs: build
     steps:
       - name: Deploy to Vultr
-        if: ${{ github.ref_name == 'main' }}
+        if: ${{ github.ref_name == 'master' }}
         run: |
               echo "deploying now"
               mkdir ~/.ssh || true
