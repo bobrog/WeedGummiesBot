@@ -21,7 +21,7 @@ def get_channel(channel_name):
     return discord.utils.get(
         bot.get_all_channels(),
         name=channel_name,
-        type__name=discord.ChannelType.text.name)
+        type__name="text")
 
 
 def gsheet_themes():
