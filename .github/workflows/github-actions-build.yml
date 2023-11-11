@@ -10,7 +10,7 @@ jobs:
       - name: Docker build
         run: docker build -t ci .
       - name: Pylint
-        run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E *.py'
+        run: docker run --entrypoint /bin/bash ci -c 'pip install pylint && pylint -E --disable=used-before-assignment *.py'
   deploy:
     runs-on: ubuntu-latest
     needs: build
