@@ -114,6 +114,9 @@ async def help(ctx):
 @ tasks.loop(seconds=3600)
 async def newtheme_task():
     logging.info("newtheme_task: woke up")
+    if not opts.schedule_enabled:
+        logging.info("newtheme_task: disabled by config")
+        return
     channel = get_channel(opts.reminder_chan_name)
 
     if channel == None:
@@ -291,6 +294,9 @@ if __name__ == "__main__":
                ]))
     parser.add("--spotify-allowed-users", env_var="SPOTIFY_ALLOWED_USERS")
     parser.add("--ops-chan-name", env_var="OPS_CHAN_NAME")
+    parser.add("--schedule-enabled", env_var="SCHEDULE_ENABLED",
+               default=True,
+               type=eval)
 
     opts = parser.parse_args()
     parser.print_values()

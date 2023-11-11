@@ -25,5 +25,6 @@ docker run \
     --restart always \
     --env-file ${env_file} \
     --env VERSION=${container_version} \
+    --env SCHEDULE_ENABLED=False \
     --name ${image_name}_${git_branch} \
     ${container_version}

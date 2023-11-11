@@ -1,5 +1,5 @@
 discord.py==1.6.0
-ConfigArgParse==1.2.3
+ConfigArgParse==1.7
 gspread==3.7.0
 pytz==2020.01
 spotipy==2.22.1
